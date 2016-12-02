@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+  <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+  <script src="https://npmcdn.com/react-router@2.4.0/umd/ReactRouter.min.js"></script>
+  <link rel = "stylesheet" type = "text/css" href = "css/style.css">
+<style>
+
+</style>
+</head>
+  
+<body>
+  
+  <div id="container">
+  </div>
+  
+  <script type="text/babel">
+var { Router,Route,IndexRoute,IndexLink,Link } = ReactRouter;
+var destination = document.querySelector("#container");
+var itemArray = [];
+var queryResult=[];
+var App = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <h1>Task Webpage</h1>
+        <ul className="header">
+          <li><Link to="/">Show Task</Link></li>
+          <li><Link to="/searchtask">Search Task</Link></li>
+          <li><Link to="/addtask">Add Task</Link></li>
+        </ul>
+        <div className="content">
+           {this.props.children}
+        </div>
+      </div>
+    )
+  }
+});
+var showtask = React.createClass({
+  render: function() {
+    function createTasks(item) {
+      return <tr><td key={item.key}>{item.text}</td><td>{item.name}</td><td>{item.creator}</td></tr>
+    }
+    if(itemArray.length > 0){
+      var listItems = itemArray.map(createTasks);
+      return (
+      <div>
+      	<h2>Task Table</h2>
+        <table className="theList">
+          <thead>
+          <tr>
+          <td>Task Name</td>
+          <td>Task Id</td>
+          <td>Task Creator</td>
+          </tr>
+          </thead>
+        <tbody>
+          {listItems}
+        </tbody>
+        </table>
+        </div>
+      );
+    } else{
+      return (
+            <p>No Record Found</p>
+      );
+    }
+    
+  }
+});
+var DisplayTable = React.createClass({
+    render:function(){
+       
+        var rows=[];
+        queryResult.forEach(function(task) {
+        	rows.push(<tr><td>{task.text}</td><td>{task.name}</td><td>{task.creator}</td></tr>)
+        });
+        
+    if(rows.length > 0){
+      return (
+  		<table>
+            <thead>
+                <tr>
+		          <td>Task Name</td>
+		          <td>Task Id</td>
+		          <td>Task Creator</td>
+                </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+        </table>
+      );
+    } else{
+      return (
+            <p>No Match Found</p>
+      );
+    }
+    }
+});
+var searchtask = React.createClass({
+    doSearch:function(){
+    	var queryText = this._search.value;
+        //get query result
+        queryResult=[];
+        itemArray.forEach(function(task){
+            if(task.name.toLowerCase().indexOf(queryText)!=-1){
+            	queryResult.push(task);
+            }
+        });
+ 
+        this.setState({
+            query:queryText,
+            filteredData: queryResult
+        })
+    },
+    getInitialState:function(){
+        return{
+            query:'',
+            filteredData: this.props.data
+        }
+    },
+    render:function(){
+        return (
+            <div className="InstantBox">
+                <h2>Search Box</h2>
+                <input onChange={this.doSearch} ref={(a) => this._search = a} placeholder="Search by task id..." className="forminput" ></input>
+                <DisplayTable data={this.state.filteredData}/>
+            </div>
+        );
+    }
+});
+var addtask = React.createClass({
+  getInitialState: function() {
+      return {
+      items: []
+     };
+   },
+  addItem: function(e) {
+     
+    itemArray.push(
+      {
+        text: this._inputElement.value,
+        name: this._name.value,
+        creator: this._creator.value,
+        key: Date.now()
+      }
+    );
+    this.setState({
+      items: itemArray
+    });
+    this._inputElement.value = "";
+    this._name.value = "";
+    this._creator.value = "";
+    e.preventDefault();
+  },
+  render: function() {
+      return (
+        <div>
+          <h2>New Task Details</h2><br></br>
+          <form onSubmit={this.addItem}>
+            Task Name :
+            <input ref={(a) => this._inputElement = a} className="forminput" placeholder="Task Name"></input>
+            Task Id :
+            <input ref={(b) => this._name = b} className="forminput" placeholder="Task Id"></input>
+            Task Creator :
+            <input ref={(c) => this._creator = c} className="forminput" placeholder="Task Creator"></input>
+            <button type="submit">Add Details</button>
+          </form>
+        <addtask entries={this.state.items}/>
+        </div>
+      );
+    }
+});
+
+ReactDOM.render(
+  <Router>
+    <Route path="/" component={App}>
+      <IndexRoute component={showtask}/>
+      <Route path="searchtask" component={searchtask} />
+      <Route path="addtask" component={addtask} />
+    </Route>
+  </Router>,
+  destination
+);
+  </script>
+</body>
+  
+</html>
